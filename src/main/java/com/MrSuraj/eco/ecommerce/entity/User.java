@@ -34,9 +34,9 @@ public class User {
     @JsonIgnore
     private List<Rating> rating = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-//    @JsonIgnore
-//    private List<Review> review = new ArrayList<>();
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Review> review = new ArrayList<>();
 
     private LocalDateTime createdAt;
 }
