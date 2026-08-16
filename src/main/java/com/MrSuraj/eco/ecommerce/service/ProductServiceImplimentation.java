@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -117,39 +119,119 @@ public class ProductServiceImplimentation implements ProductService{
     }
 
     @Override
-    public Page<Product> getAllProduct(String category, List<String> colors, List<String> sizes, Integer minPrice, Integer maxPrice, Integer minDiscount, String sort, String stock, Integer pageNumber, Integer pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber,pageNumber);
+    public Page<Product> getAllProduct(
+            String category,
+            List<String> colors,
+            List<String> sizes,
+            Integer minPrice,
+            Integer maxPrice,
+            Integer minDiscount,
+            String sort,
+            String stock,
+            Integer pageNumber,
+            Integer pageSize) {
 
-        List<Product> products = productRepository.filterProducts(category,minPrice,maxPrice,minDiscount,sort);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-        if(!colors.isEmpty()){
-            products = products.stream().filter(p->colors
-                            .stream()
-                            .anyMatch(c->c.equalsIgnoreCase(p.getColor())))
+        List<Product> products = productRepository.filterProducts(
+                category,
+                minPrice,
+                maxPrice,
+                minDiscount,
+                sort
+        );
+
+        // Filter by color
+        if (colors != null && !colors.isEmpty()) {
+
+            products = products.stream()
+                    .filter(p -> colors.stream()
+                            .anyMatch(c ->
+                                    c.equalsIgnoreCase(p.getColor())
+                            )
+                    )
                     .collect(Collectors.toList());
         }
 
-        if(stock!=null){
-            if(stock.equals("in_stock")){
-                products = products
-                        .stream()
-                        .filter(p->p.getQuantity()>0)
-                        .collect(Collectors.toList());
-            }
-            else if(stock.equals("out_of_stock")){
-                products = products
-                        .stream()
-                        .filter(p->p.getQuantity()<1)
+        // Filter by size
+        if (sizes != null && !sizes.isEmpty()) {
+
+            products = products.stream()
+                    .filter(p -> p.getSizes().stream()
+                            .anyMatch(productSize ->
+                                    sizes.stream()
+                                            .anyMatch(size ->
+                                                    size.equalsIgnoreCase(
+                                                            productSize.getName()
+                                                    )
+                                            )
+                            )
+                    )
+                    .collect(Collectors.toList());
+        }
+
+        // Filter by stock
+        if (stock != null) {
+
+            if (stock.equalsIgnoreCase("in_stock")) {
+
+                products = products.stream()
+                        .filter(p -> p.getQuantity() > 0)
                         .collect(Collectors.toList());
 
+            } else if (stock.equalsIgnoreCase("out_of_stock")) {
+
+                products = products.stream()
+                        .filter(p -> p.getQuantity() < 1)
+                        .collect(Collectors.toList());
             }
         }
 
-        int startIndex = (int) pageable.getOffset();
-        int endIndex = Math.min(startIndex+pageable.getPageSize(),products.size());
-        List<Product> pageContent = products.subList(startIndex,endIndex);
+        // Sort products
+        if (sort != null) {
 
-        Page<Product> filteredProducts = new PageImpl<>(pageContent,pageable,products.size());
-        return filteredProducts;
+            if (sort.equalsIgnoreCase("price_low")) {
+
+                products = products.stream()
+                        .sorted(Comparator.comparing(Product::getPrice))
+                        .collect(Collectors.toList());
+
+            } else if (sort.equalsIgnoreCase("price_high")) {
+
+                products = products.stream()
+                        .sorted(Comparator.comparing(Product::getPrice).reversed())
+                        .collect(Collectors.toList());
+            }
+        }
+
+        // Pagination
+        int startIndex = (int) pageable.getOffset();
+
+        if (startIndex >= products.size()) {
+            return new PageImpl<>(
+                    new ArrayList<>(),
+                    pageable,
+                    products.size()
+            );
+        }
+
+        int endIndex = Math.min(
+                startIndex + pageable.getPageSize(),
+                products.size()
+        );
+
+        List<Product> pageContent =
+                products.subList(startIndex, endIndex);
+
+        return new PageImpl<>(
+                pageContent,
+                pageable,
+                products.size()
+        );
+    }
+
+    @Override
+    public List<Product> findAllProducts() {
+        return productRepository.findAll();
     }
 }

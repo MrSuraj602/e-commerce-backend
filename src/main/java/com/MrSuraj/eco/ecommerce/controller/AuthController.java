@@ -2,10 +2,12 @@ package com.MrSuraj.eco.ecommerce.controller;
 
 import com.MrSuraj.eco.ecommerce.Exception.UserException;
 import com.MrSuraj.eco.ecommerce.config.JwtProvider;
+import com.MrSuraj.eco.ecommerce.entity.Cart;
 import com.MrSuraj.eco.ecommerce.entity.User;
 import com.MrSuraj.eco.ecommerce.repo.UserRepository;
 import com.MrSuraj.eco.ecommerce.request.LoginRequest;
 import com.MrSuraj.eco.ecommerce.response.AuthResponse;
+import com.MrSuraj.eco.ecommerce.service.CartService;
 import com.MrSuraj.eco.ecommerce.service.CustomeUserServiceImplementation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder encoder;
+    private final CartService cartService;
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws UserException{
@@ -49,6 +52,7 @@ public class AuthController {
         createdUser.setLastName(lastName);
 
         User savedUser = userRepository.save(createdUser);
+        Cart cart = cartService.createCart(savedUser);
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(savedUser.getEmail(),savedUser.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authentication);
