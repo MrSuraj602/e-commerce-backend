@@ -9,6 +9,11 @@ import com.MrSuraj.eco.ecommerce.request.LoginRequest;
 import com.MrSuraj.eco.ecommerce.response.AuthResponse;
 import com.MrSuraj.eco.ecommerce.service.CartService;
 import com.MrSuraj.eco.ecommerce.service.CustomeUserServiceImplementation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "Public customer registration and sign-in; successful requests return a JWT for protected API calls")
 public class AuthController {
     private final CustomeUserServiceImplementation customeUserServiceImplementation;
     private final UserRepository userRepository;
@@ -34,7 +40,15 @@ public class AuthController {
     private final CartService cartService;
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws UserException{
+        @Operation(summary = "Register a customer account", description = "Creates a customer account and an initial cart, then returns a JWT. Use this when a new customer completes the storefront registration form; no existing token is required.")
+        @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Account and cart created; JWT returned"),
+            @ApiResponse(responseCode = "400", description = "Request body could not be read"),
+            @ApiResponse(responseCode = "500", description = "Registration failed; duplicate-email exceptions are not translated by a project exception handler")
+        })
+        public ResponseEntity<AuthResponse> createUserHandler(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Customer registration fields: first name, last name, email, and password", required = true)
+            @Parameter(description = "New customer account details") @RequestBody User user) throws UserException{
         String email = user.getEmail();
         String password = user.getPassword();
         String firstName = user.getFirstName();
@@ -66,7 +80,16 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<AuthResponse> loginUserHandler(@RequestBody LoginRequest loginRequest){
+        @Operation(summary = "Sign in a customer", description = "Checks the supplied email and password and returns a JWT. Use this when an existing customer signs in; paste the returned token into Swagger UI's Authorize dialog for protected operations.")
+        @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Credentials accepted and JWT returned"),
+            @ApiResponse(responseCode = "400", description = "Request body could not be read"),
+            @ApiResponse(responseCode = "401", description = "Credentials were rejected"),
+            @ApiResponse(responseCode = "500", description = "Authentication service failed")
+        })
+        public ResponseEntity<AuthResponse> loginUserHandler(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Email and password for an existing customer account", required = true)
+            @Parameter(description = "Customer sign-in credentials") @RequestBody LoginRequest loginRequest){
         String username = loginRequest.getEmail();
         String password = loginRequest.getPassword();
 

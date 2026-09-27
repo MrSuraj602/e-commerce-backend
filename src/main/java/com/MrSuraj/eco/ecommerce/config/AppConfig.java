@@ -48,7 +48,7 @@ public class AppConfig {
                 cfg.setAllowedHeaders(Collections.singletonList("*"));
                 cfg.setExposedHeaders(Arrays.asList("Authorization"));
                 cfg.setMaxAge(3600L);
-                return null;
+                return cfg;
             }
         }));
         http.formLogin(Customizer.withDefaults());

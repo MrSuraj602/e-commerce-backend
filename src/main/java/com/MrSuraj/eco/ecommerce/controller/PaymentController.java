@@ -4,7 +4,7 @@ import com.MrSuraj.eco.ecommerce.Exception.OrderException;
 import com.MrSuraj.eco.ecommerce.entity.Order;
 import com.MrSuraj.eco.ecommerce.entity.OrderStatus;
 import com.MrSuraj.eco.ecommerce.repo.OrderRepository;
-import com.MrSuraj.eco.ecommerce.response.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import com.MrSuraj.eco.ecommerce.response.PaymentLinkResponse;
 import com.MrSuraj.eco.ecommerce.service.OrderService;
 import com.MrSuraj.eco.ecommerce.service.UserService;
@@ -12,6 +12,11 @@ import com.razorpay.Payment;
 import com.razorpay.PaymentLink;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +26,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Payments", description = "Create Razorpay payment links and verify payment results returned to the storefront")
+@SecurityRequirement(name = "bearerAuth")
 public class PaymentController {
 
     @Value("${razorpay.api.key}")
@@ -37,8 +44,14 @@ public class PaymentController {
     private OrderRepository orderRepository;
 
     @PostMapping("/payments/{orderId}")
-    public ResponseEntity<PaymentLinkResponse> createPaymentLink(@PathVariable Long orderId,
-                                                                 @RequestHeader("Authorization") String jwt) throws RazorpayException, OrderException {
+        @Operation(summary = "Create a Razorpay payment link", description = "Creates a Razorpay payment link for the specified existing order in INR and returns its URL and ID. Use after order creation so the storefront can redirect the customer to Razorpay. Razorpay is configured to return the browser to the frontend payment route; the order is not ownership-checked by this handler.")
+        @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Razorpay payment link created"),
+            @ApiResponse(responseCode = "401", description = "JWT is missing or invalid"),
+            @ApiResponse(responseCode = "500", description = "Order lookup or Razorpay link creation failed")
+        })
+        public ResponseEntity<PaymentLinkResponse> createPaymentLink(@Parameter(description = "Identifier of the existing order to pay", example = "9001") @PathVariable Long orderId,
+                                                                 @Parameter(hidden = true) @RequestHeader("Authorization") String jwt) throws RazorpayException, OrderException {
         Order order = orderService.findOrderByid(orderId);
 
         try{
@@ -78,8 +91,16 @@ public class PaymentController {
     }
 
     @GetMapping("/payments")
-    public ResponseEntity<ApiResponse> redirect(@RequestParam(name = "payment_id") String paymentId,
-                                                @RequestParam(name = "order_id")Long orderId) throws OrderException, RazorpayException {
+        @Operation(summary = "Verify a Razorpay payment result", description = "Fetches the payment identified by Razorpay after the customer returns from the hosted payment page. The frontend calls this route with the callback's payment_id and order_id. If Razorpay reports captured, the handler records the payment ID, marks payment COMPLETED, and sets the order to PLACED; otherwise it still returns the current success-style ApiResponse without changing those statuses.")
+        @ApiResponses({
+            @ApiResponse(responseCode = "202", description = "Razorpay payment lookup completed; order state changes only when the payment status is captured"),
+            @ApiResponse(responseCode = "400", description = "A required callback query parameter is missing"),
+            @ApiResponse(responseCode = "401", description = "JWT is missing or invalid"),
+            @ApiResponse(responseCode = "500", description = "Order lookup or Razorpay payment verification failed")
+        })
+    public ResponseEntity<com.MrSuraj.eco.ecommerce.response.ApiResponse> redirect(
+                            @Parameter(description = "Payment identifier returned by Razorpay's frontend callback", example = "pay_example123") @RequestParam(name = "payment_id") String paymentId,
+                            @Parameter(description = "Identifier of the order associated with the payment", example = "9001") @RequestParam(name = "order_id")Long orderId) throws OrderException, RazorpayException {
 
         Order order = orderService.findOrderByid(orderId);
         RazorpayClient razorpay = new RazorpayClient(apiKey,apiSecret);
@@ -94,7 +115,7 @@ public class PaymentController {
                 orderRepository.save(order);
             }
 
-            ApiResponse res = new ApiResponse();
+            com.MrSuraj.eco.ecommerce.response.ApiResponse res = new com.MrSuraj.eco.ecommerce.response.ApiResponse();
             res.setMessage("Your Order Get Placed Successfully!");
             res.setStatus(true);
 

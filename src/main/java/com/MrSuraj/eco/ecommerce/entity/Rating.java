@@ -1,6 +1,7 @@
 package com.MrSuraj.eco.ecommerce.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,9 +15,11 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Schema(description = "Product rating submitted by a customer")
 public class Rating {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Rating identifier", example = "801", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     @ManyToOne
@@ -29,6 +32,7 @@ public class Rating {
     private Product product;
 
     @Column(name = "rating")
+    @Schema(description = "Numeric rating value; no range is enforced by the current service", example = "4.5")
     private double rating;
 
     private LocalDateTime createdAt;

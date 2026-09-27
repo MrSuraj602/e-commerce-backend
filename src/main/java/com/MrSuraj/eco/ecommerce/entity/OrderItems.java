@@ -1,6 +1,7 @@
 package com.MrSuraj.eco.ecommerce.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,9 +15,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @AllArgsConstructor
+@Schema(description = "A product line copied into an order")
 public class OrderItems {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Order-line identifier", example = "601", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     @JsonIgnore
@@ -24,10 +27,13 @@ public class OrderItems {
     private Order order;
 
     @ManyToOne
+    @Schema(description = "Product purchased")
     private Product product;
 
+    @Schema(description = "Purchased size", example = "M")
     private String size;
 
+    @Schema(description = "Units purchased", example = "2")
     private int quantity;
     private Integer price;
     private Integer discountedPrice;

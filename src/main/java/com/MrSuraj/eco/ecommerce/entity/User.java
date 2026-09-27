@@ -1,6 +1,7 @@
 package com.MrSuraj.eco.ecommerce.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -10,14 +11,23 @@ import java.util.List;
 
 @Entity
 @Data
+@Schema(description = "Customer profile returned by profile and nested order resources. Password is write-only; stored payment-card information is excluded from OpenAPI schemas.")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Schema(description = "Customer identifier", example = "42", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
+    @Schema(description = "Customer first name", example = "Alex")
     private String firstName;
+
+    @Schema(description = "Customer last name", example = "Morgan")
     private String lastName;
+
+    @Schema(description = "Account password supplied only during registration; never returned in documented responses", example = "example-password", format = "password", accessMode = Schema.AccessMode.WRITE_ONLY)
     private String password;
+
+    @Schema(description = "Customer account email", example = "customer@example.com")
     private String email;
     private String role;
     private String mobile;
@@ -28,6 +38,7 @@ public class User {
     @Embedded
     @ElementCollection
     @CollectionTable(name="payment_information",joinColumns = @JoinColumn(name = "user_id"))
+    @Schema(hidden = true)
     private List<PaymentInformation>  paymentInformation = new ArrayList<>();
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
