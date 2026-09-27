@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/orders")
-@Tag(name = "Admin Orders", description = "Administrative order review and fulfillment actions. Routes require a JWT, but the current security configuration does not enforce an administrator role.")
+@Tag(name = "Admin Orders", description = "Administrative order review and fulfillment actions. Every route requires an authenticated user with the ADMIN role.")
 @SecurityRequirement(name = "bearerAuth")
 public class AdminOrderController {
 
@@ -26,7 +26,7 @@ public class AdminOrderController {
     private OrderService orderService;
 
     @GetMapping("/")
-        @Operation(summary = "List all orders", description = "Returns all orders for operational review. Use this in the administrative order-management view to find orders requiring confirmation, shipment, delivery, cancellation, or deletion. Requires an authenticated JWT; no admin role is enforced by the current application.")
+        @Operation(summary = "List all orders", description = "Returns all orders for operational review. Use this in the administrative order-management view to find orders requiring confirmation, shipment, delivery, cancellation, or deletion. Requires the ADMIN role.")
         @ApiResponses({
             @ApiResponse(responseCode = "202", description = "Order list returned"),
             @ApiResponse(responseCode = "401", description = "JWT is missing or invalid"),
@@ -39,7 +39,7 @@ public class AdminOrderController {
     }
 
     @PutMapping("/{orderId}/confirmed")
-        @Operation(summary = "Confirm an order", description = "Moves the specified order into the confirmed state. Use this after an operator reviews a newly placed order and approves it for fulfillment. Requires an authenticated JWT; no admin role is enforced by the current application.")
+        @Operation(summary = "Confirm an order", description = "Moves the specified order into the confirmed state. Use this after an administrator reviews a newly placed order and approves it for fulfillment. Requires the ADMIN role.")
         @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Updated order returned"),
             @ApiResponse(responseCode = "401", description = "JWT is missing or invalid"),
@@ -52,7 +52,7 @@ public class AdminOrderController {
     }
 
     @PutMapping("/{orderId}/ship")
-        @Operation(summary = "Mark an order as shipped", description = "Moves the specified order into the shipped state. Use this when the fulfillment team dispatches the package. Requires an authenticated JWT; no admin role is enforced by the current application.")
+        @Operation(summary = "Mark an order as shipped", description = "Moves the specified order into the shipped state. Use this when the fulfillment team dispatches the package. Requires the ADMIN role.")
         @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Updated order returned"),
             @ApiResponse(responseCode = "401", description = "JWT is missing or invalid"),
@@ -67,7 +67,7 @@ public class AdminOrderController {
     }
 
     @PutMapping("/{orderId}/deliver")
-        @Operation(summary = "Mark an order as delivered", description = "Moves the specified order into the delivered state. Use this when delivery completion is confirmed. Requires an authenticated JWT; no admin role is enforced by the current application.")
+        @Operation(summary = "Mark an order as delivered", description = "Moves the specified order into the delivered state. Use this when delivery completion is confirmed. Requires the ADMIN role.")
         @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Updated order returned"),
             @ApiResponse(responseCode = "401", description = "JWT is missing or invalid"),
@@ -81,7 +81,7 @@ public class AdminOrderController {
     }
 
     @PutMapping("/{orderId}/cancel")
-        @Operation(summary = "Cancel an order", description = "Moves the specified order into the cancelled state. Use this when an operator cancels an order from order management. Requires an authenticated JWT; no admin role is enforced by the current application.")
+        @Operation(summary = "Cancel an order", description = "Moves the specified order into the cancelled state. Use this when an administrator cancels an order from order management. Requires the ADMIN role.")
         @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Updated order returned"),
             @ApiResponse(responseCode = "401", description = "JWT is missing or invalid"),
@@ -94,7 +94,7 @@ public class AdminOrderController {
     }
 
     @DeleteMapping("/{orderId}/delete")
-        @Operation(summary = "Delete an order", description = "Deletes the specified order record. Use this from order management only when the order should be removed from the system. Requires an authenticated JWT; no admin role is enforced by the current application.")
+        @Operation(summary = "Delete an order", description = "Deletes the specified order record. Use this from order management only when the order should be removed from the system. Requires the ADMIN role.")
         @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Order deleted"),
             @ApiResponse(responseCode = "401", description = "JWT is missing or invalid"),

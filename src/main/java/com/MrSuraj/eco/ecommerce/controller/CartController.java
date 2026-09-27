@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -54,7 +55,7 @@ public class CartController {
         })
     public ResponseEntity<com.MrSuraj.eco.ecommerce.response.ApiResponse>addItemToCart(
                                                     @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Product identifier, selected size, quantity, and price to add", required = true)
-                                                    @Parameter(description = "Selected product and quantity") @RequestBody AddItemRequest req,
+                                                    @Parameter(description = "Selected product and quantity") @Valid @RequestBody AddItemRequest req,
                                                     @Parameter(hidden = true) @RequestHeader("Authorization")String jwt)throws UserException, ProductException{
         User user = userService.findUserProfileByJwt(jwt);
 

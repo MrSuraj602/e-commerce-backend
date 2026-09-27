@@ -7,6 +7,7 @@ import com.MrSuraj.eco.ecommerce.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
 
 import java.util.Optional;
 
@@ -24,7 +25,7 @@ public class UserServiceImplementation implements UserService{
         if(user.isPresent()){
             return user.get();
         }
-        throw new UserException("user not found with id : "+userId);
+        throw new UserException("user not found with id : "+userId, HttpStatus.NOT_FOUND);
     }
 
     @Override
@@ -32,7 +33,7 @@ public class UserServiceImplementation implements UserService{
         String email = jwtProvider.getEmailFromToken(jwt);
         User user = userRepository.findByEmail(email);
         if(user == null){
-            throw new UserException("user not found with email "+email);
+            throw new UserException("user not found with email "+email, HttpStatus.NOT_FOUND);
         }
         return user;
     }

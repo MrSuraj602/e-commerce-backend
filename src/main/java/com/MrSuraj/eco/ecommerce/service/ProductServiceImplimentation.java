@@ -60,7 +60,7 @@ public class ProductServiceImplimentation implements ProductService{
         if(thirdLevel == null){
             Category thirdLevelCategory = new Category();
             thirdLevelCategory.setName(req.getThirdLevelCategory());
-            thirdLevelCategory.setParentCategory(thirdLevel);
+            thirdLevelCategory.setParentCategory(secondLevel);
             thirdLevelCategory.setLevel(3);
 
             thirdLevel = categoryRepository.save(thirdLevelCategory);
@@ -97,9 +97,18 @@ public class ProductServiceImplimentation implements ProductService{
     public Product updateProduct(Long productId,Product req) throws ProductException {
         Product product = findProductById(productId);
 
-        if(req.getQuantity() != 0){
-            product.setQuantity(req.getQuantity());
-        }
+        if (req.getTitle() != null) product.setTitle(req.getTitle());
+        if (req.getDescription() != null) product.setDescription(req.getDescription());
+        if (req.getBrand() != null) product.setBrand(req.getBrand());
+        if (req.getColor() != null) product.setColor(req.getColor());
+        if (req.getImageUrl() != null) product.setImageUrl(req.getImageUrl());
+        if (req.getSizes() != null) product.setSizes(req.getSizes());
+        if (req.getCategory() != null) product.setCategory(req.getCategory());
+        product.setPrice(req.getPrice());
+        product.setDiscountedPrice(req.getDiscountedPrice());
+        product.setDiscountPercent(req.getDiscountPercent());
+        product.setQuantity(req.getQuantity());
+
         return productRepository.save(product);
     }
 

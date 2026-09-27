@@ -14,4 +14,7 @@ public class AuthResponse {
 
     @Schema(description = "Authentication result message", example = "SignUp Success")
     private String message;
+
+    @Schema(description = "Persisted account role used by the frontend for navigation", example = "CUSTOMER", allowableValues = {"CUSTOMER", "ADMIN"})
+    private String role;
 }

@@ -23,7 +23,10 @@ public class CustomeUserServiceImplementation implements UserDetailsService {
         if(user==null){
             throw new UsernameNotFoundException("user not found with email :"+username);
         }
+        String role = user.getRole();
+        String authority = "ADMIN".equalsIgnoreCase(role) ? "ROLE_ADMIN" : "ROLE_CUSTOMER";
         List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(authority));
         return new org.springframework.security.core.userdetails.User(user.getEmail(),user.getPassword(),authorities);
     }
 }

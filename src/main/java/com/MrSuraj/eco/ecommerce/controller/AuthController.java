@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +49,7 @@ public class AuthController {
         })
         public ResponseEntity<AuthResponse> createUserHandler(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Customer registration fields: first name, last name, email, and password", required = true)
-            @Parameter(description = "New customer account details") @RequestBody User user) throws UserException{
+            @Parameter(description = "New customer account details") @Valid @RequestBody User user) throws UserException{
         String email = user.getEmail();
         String password = user.getPassword();
         String firstName = user.getFirstName();
@@ -57,24 +58,28 @@ public class AuthController {
         User isEmailExist = userRepository.findByEmail(email);
 
         if(isEmailExist != null){
-            throw new UserException("Email is Already Used With Another Account");
+            throw new UserException("Email is Already Used With Another Account", HttpStatus.CONFLICT);
         }
         User createdUser = new User();
         createdUser.setEmail(email);
         createdUser.setPassword(encoder.encode(password));
         createdUser.setFirstName(firstName);
         createdUser.setLastName(lastName);
+        createdUser.setRole("CUSTOMER");
 
         User savedUser = userRepository.save(createdUser);
         Cart cart = cartService.createCart(savedUser);
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(savedUser.getEmail(),savedUser.getPassword());
+        UserDetails userDetails = customeUserServiceImplementation.loadUserByUsername(savedUser.getEmail());
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+            userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = jwtProvider.generateToken(authentication);
 
         AuthResponse authResponse = new AuthResponse();
         authResponse.setJwt(token);
         authResponse.setMessage("SignUp Success");
+        authResponse.setRole(savedUser.getRole());
 
         return new ResponseEntity<AuthResponse>(authResponse, HttpStatus.CREATED);
     }
@@ -89,7 +94,7 @@ public class AuthController {
         })
         public ResponseEntity<AuthResponse> loginUserHandler(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Email and password for an existing customer account", required = true)
-            @Parameter(description = "Customer sign-in credentials") @RequestBody LoginRequest loginRequest){
+            @Parameter(description = "Customer sign-in credentials") @Valid @RequestBody LoginRequest loginRequest){
         String username = loginRequest.getEmail();
         String password = loginRequest.getPassword();
 
@@ -101,6 +106,8 @@ public class AuthController {
         AuthResponse authResponse = new AuthResponse();
         authResponse.setJwt(token);
         authResponse.setMessage("Signup Success");
+        authResponse.setRole(authentication.getAuthorities().stream()
+            .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority())) ? "ADMIN" : "CUSTOMER");
 
         return new ResponseEntity<AuthResponse>(authResponse, HttpStatus.CREATED);
 

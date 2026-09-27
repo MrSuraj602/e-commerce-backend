@@ -68,7 +68,7 @@ public class OrderController {
         return new ResponseEntity<>(orders,HttpStatus.CREATED);
     }
     @GetMapping("/{Id}")
-        @Operation(summary = "Get an order by ID", description = "Retrieves the order record used by order details and post-payment screens. The current handler loads the supplied order ID but does not verify that it belongs to the authenticated customer.")
+        @Operation(summary = "Get an order by ID", description = "Retrieves the authenticated customer's order record for order details and post-payment screens. Orders belonging to another customer are rejected.")
         @ApiResponses({
             @ApiResponse(responseCode = "202", description = "Order record returned"),
             @ApiResponse(responseCode = "401", description = "JWT is missing or invalid"),
@@ -80,6 +80,9 @@ public class OrderController {
     )throws UserException, OrderException{
         User user = userService.findUserProfileByJwt(jwt);
         Order order = orderService.findOrderByid(orderId);
+        if (order.getUser() == null || !user.getId().equals(order.getUser().getId())) {
+            throw new UserException("You are not allowed to access this order", HttpStatus.FORBIDDEN);
+        }
 
         return new ResponseEntity<>(order,HttpStatus.ACCEPTED);
     }

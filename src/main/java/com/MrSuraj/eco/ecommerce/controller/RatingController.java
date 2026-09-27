@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/ratings")
@@ -41,7 +42,7 @@ public class RatingController {
         })
     public ResponseEntity<Rating> createRating(
                                                @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Product identifier and rating value", required = true)
-                                               @Parameter(description = "Rating submitted by the customer") @RequestBody RatingRequest req,
+                                               @Parameter(description = "Rating submitted by the customer") @Valid @RequestBody RatingRequest req,
                                                @Parameter(hidden = true) @RequestHeader("Authorization")String jwt)throws UserException, ProductException{
         User user = userService.findUserProfileByJwt(jwt);
         Rating rating = ratingService.createRating(req,user);

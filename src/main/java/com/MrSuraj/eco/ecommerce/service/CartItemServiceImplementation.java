@@ -9,6 +9,7 @@ import com.MrSuraj.eco.ecommerce.entity.User;
 import com.MrSuraj.eco.ecommerce.repo.CartItemRepository;
 import com.MrSuraj.eco.ecommerce.repo.CartRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -63,7 +64,7 @@ public class CartItemServiceImplementation implements CartItemService{
             cartItemRepository.deleteById(cartItemId);
         }
         else {
-            throw new UserException("You Can't Remove Another User's Item!!");
+            throw new UserException("You Can't Remove Another User's Item!!", HttpStatus.FORBIDDEN);
         }
     }
 

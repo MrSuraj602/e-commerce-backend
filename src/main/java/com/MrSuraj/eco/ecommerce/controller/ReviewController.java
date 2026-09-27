@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -43,7 +44,7 @@ public class ReviewController {
         })
     public ResponseEntity<Review> createRating(
                                                @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Product identifier and written review text", required = true)
-                                               @Parameter(description = "Review submitted by the customer") @RequestBody ReviewRequest req,
+                                               @Parameter(description = "Review submitted by the customer") @Valid @RequestBody ReviewRequest req,
                                                @Parameter(hidden = true) @RequestHeader("Authorization")String jwt)throws UserException, ProductException {
         User user = userService.findUserProfileByJwt(jwt);
         Review review = reviewService.createReview(req,user);

@@ -17,10 +17,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/admin/products")
-@Tag(name = "Admin Products", description = "Administrative catalog management operations. Routes require a JWT, but the current security configuration does not enforce an administrator role.")
+@Tag(name = "Admin Products", description = "Administrative catalog management operations. Every route requires an authenticated user with the ADMIN role.")
 @SecurityRequirement(name = "bearerAuth")
 public class AdminProductController {
 
@@ -28,7 +29,7 @@ public class AdminProductController {
     private ProductService productService;
 
     @PostMapping("/")
-        @Operation(summary = "Create a catalog product", description = "Creates a product and resolves or creates its three category levels. Use this from the catalog-management interface when adding a product for customers. Requires an authenticated JWT; no admin role is enforced by the current application.")
+        @Operation(summary = "Create a catalog product", description = "Creates a product and resolves or creates its three category levels. Use this from the catalog-management interface when adding a product for customers. Requires the ADMIN role.")
         @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Product created"),
             @ApiResponse(responseCode = "400", description = "Product body could not be read"),
@@ -37,14 +38,14 @@ public class AdminProductController {
         })
         public ResponseEntity<Product> createProduct(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Product fields and top-, second-, and third-level category names", required = true)
-            @Parameter(description = "Product to add to the catalog") @RequestBody CreateProductRequest req){
+            @Parameter(description = "Product to add to the catalog") @Valid @RequestBody CreateProductRequest req){
 
         Product product = productService.createProduct(req);
         return new ResponseEntity<Product>(product, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{productId}/delete")
-        @Operation(summary = "Delete a catalog product", description = "Deletes the product with the given identifier. Use this from catalog management when removing a product from the catalog. Requires an authenticated JWT; no admin role is enforced by the current application.")
+        @Operation(summary = "Delete a catalog product", description = "Deletes the product with the given identifier. Use this from catalog management when removing a product from the catalog. Requires the ADMIN role.")
         @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Product deleted"),
             @ApiResponse(responseCode = "401", description = "JWT is missing or invalid"),
@@ -59,7 +60,7 @@ public class AdminProductController {
     }
 
     @GetMapping("/all")
-        @Operation(summary = "List all catalog products for administration", description = "Returns all product records without storefront filtering or pagination. Use this to populate the administrative catalog-management view. Requires an authenticated JWT; no admin role is enforced by the current application.")
+        @Operation(summary = "List all catalog products for administration", description = "Returns all product records without storefront filtering or pagination. Use this to populate the administrative catalog-management view. Requires the ADMIN role.")
         @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Product list returned"),
             @ApiResponse(responseCode = "401", description = "JWT is missing or invalid"),
@@ -72,7 +73,7 @@ public class AdminProductController {
     }
 
     @PutMapping("/{productId}/update")
-        @Operation(summary = "Update a catalog product", description = "Updates the product with the supplied product object; the current service changes quantity only when the submitted quantity is nonzero. Use this from catalog management to adjust inventory. Requires an authenticated JWT; no admin role is enforced by the current application.")
+        @Operation(summary = "Update a catalog product", description = "Updates editable fields on the product with the supplied product object. Use this from catalog management to adjust product information or inventory. Requires the ADMIN role.")
         @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Product update returned"),
             @ApiResponse(responseCode = "400", description = "Product body could not be read"),
@@ -88,7 +89,7 @@ public class AdminProductController {
     }
 
     @PostMapping("/creates")
-        @Operation(summary = "Create multiple catalog products", description = "Creates each product in the submitted array. Use this for a bulk catalog import or administrative batch-entry workflow. Requires an authenticated JWT; no admin role is enforced by the current application.")
+        @Operation(summary = "Create multiple catalog products", description = "Creates each product in the submitted array. Use this for a bulk catalog import or administrative batch-entry workflow. Requires the ADMIN role.")
         @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Products created"),
             @ApiResponse(responseCode = "400", description = "Product array could not be read"),
@@ -97,7 +98,7 @@ public class AdminProductController {
         })
         public ResponseEntity<com.MrSuraj.eco.ecommerce.response.ApiResponse> createMultipleProduct(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Array of product records to create", required = true)
-            @Parameter(description = "Products to add in this batch") @RequestBody CreateProductRequest[] req){
+            @Parameter(description = "Products to add in this batch") @Valid @RequestBody CreateProductRequest[] req){
         for(CreateProductRequest product : req){
             productService.createProduct(product);
         }
