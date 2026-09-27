@@ -1,75 +1,305 @@
-# E-Commerce Backend
+# 🛒 E-Commerce Backend
 
-Spring Boot REST backend for the existing React storefront. It provides authentication, product catalog, cart, checkout/order, Razorpay payment, rating/review, profile, and administrative product/order APIs.
+A secure and scalable **RESTful backend for an e-commerce platform** built using **Spring Boot**. The application provides APIs for user authentication, product management, shopping cart, orders, reviews, ratings, addresses, and online payments.
 
-## Stack
+## 🚀 Features
 
-- Java 21 and Spring Boot 4
-- Spring MVC, Spring Security, Spring Data JPA, MySQL
-- JWT bearer authentication
-- Razorpay Java SDK
-- springdoc-openapi 3.1.1 / Swagger UI
-- JUnit 5, Mockito, MockMvc, and H2 for tests
+* 🔐 JWT-based authentication and authorization
+* 👤 User registration and login
+* 🛡️ Spring Security with role-based access control
+* 📦 Product management
+* 🗂️ Category-based product organization
+* 🔎 Product filtering, sorting, and pagination
+* 🛒 Shopping cart management
+* 📋 Order creation and order management
+* 📍 User address management
+* ⭐ Product ratings and reviews
+* 💳 Razorpay payment integration
+* 👨‍💼 Admin product and order management
+* 🔒 Password encryption using BCrypt
+* ⚠️ Custom exception handling
+* 🌐 RESTful API architecture
+* 🗄️ MySQL database with JPA/Hibernate
 
-## Run
+---
 
-Install a JDK 21 and configure a MySQL database named `ecommerce` (or supply another JDBC URL). From this directory:
+## 🛠️ Tech Stack
 
-```powershell
-.\mvnw.cmd spring-boot:run
+### Backend
+
+* Java
+* Spring Boot
+* Spring Security
+* Spring Data JPA
+* Hibernate
+* REST APIs
+* JWT
+
+### Database
+
+* MySQL
+
+### Payment
+
+* Razorpay Payment Gateway
+
+### Tools
+
+* Maven
+* Git
+* GitHub
+* Postman
+* IntelliJ IDEA
+
+---
+
+## 🏗️ Project Architecture
+
+The application follows a layered architecture:
+
+```text
+Controller
+    ↓
+Service
+    ↓
+Repository
+    ↓
+Database
 ```
 
-Configure these environment variables before starting. The local defaults are for development only; use a unique, protected JWT secret and deployment-managed credentials outside source control.
+### Main Layers
 
-| Variable | Purpose |
-| --- | --- |
-| `DB_URL` | JDBC URL; defaults to `jdbc:mysql://localhost:3306/ecommerce` |
-| `DB_USERNAME` | Database username; defaults to `root` |
-| `DB_PASSWORD` | Database password |
-| `JWT_SECRET` | HMAC signing secret, at least 32 bytes |
-| `RAZORPAY_API_KEY` | Razorpay API key |
-| `RAZORPAY_API_SECRET` | Razorpay API secret |
-
-Never commit these values or place them in frontend source or documentation.
-
-## Authentication And Roles
-
-`POST /auth/signup` creates a customer account and returns a JWT. Signup always stores the `CUSTOMER` role; the request body cannot assign `ADMIN`. `POST /auth/signin` returns a JWT and the persisted role. Send the token as `Authorization: Bearer <JWT>` to protected APIs.
-
-The backend converts the stored role to `ROLE_CUSTOMER` or `ROLE_ADMIN`, signs that authority into the JWT, and checks the authority in Spring Security. `/api/admin/**` requires `ROLE_ADMIN`; other `/api/**` routes require authentication. Existing accounts with no role are treated as customers. Admin accounts must be provisioned by a trusted database operator; there is no public role-promotion endpoint.
-
-## API Modules
-
-- Authentication: `/auth/signup`, `/auth/signin`
-- Products: `/api/products`, `/api/products/{productId}`
-- Cart and cart items: `/api/cart/**`, `/api/cart_items/**`
-- Orders: `/api/orders/**`
-- Payments: `/api/payments/**`
-- Ratings and reviews: `/api/ratings/**`, `/api/reviews/**`
-- Customer profile: `/api/users/profile`
-- Admin products and orders: `/api/admin/products/**`, `/api/admin/orders/**`
-
-Admin product APIs support create, update, list, and delete. Admin order APIs support listing, confirmation, shipping, delivery, cancellation, and deletion. Access is enforced by Spring Security, not only by frontend route checks.
-
-Order statuses are the existing values `PENDING`, `PLACED`, `CONFIRMED`, `SHIPPED`, `DELIVERED`, and `CANCELLED`. After an administrator changes a status, customer order history (`GET /api/orders/user`) and order details (`GET /api/orders/{id}`) return the latest persisted value on the next fetch. Customers can retrieve only their own order details.
-
-## Errors
-
-Global exception handling returns JSON with `timestamp`, `status`, `error`, `message`, and `path`. Validation failures also include a `validationErrors` map keyed by field. Authentication and authorization failures use the same format.
-
-## Swagger / OpenAPI
-
-Start the backend, then open:
-
-- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
-- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
-
-Use Swagger's Authorize button with the JWT returned by signup or sign-in.
-
-## Tests
-
-```powershell
-.\mvnw.cmd test
+```text
+src/main/java/
+│
+├── controller/
+│   ├── AdminController
+│   ├── AuthController
+│   ├── CartController
+│   ├── OrderController
+│   ├── ProductController
+│   ├── RatingController
+│   ├── ReviewController
+│   └── UserController
+│
+├── service/
+│   ├── ProductService
+│   ├── OrderService
+│   ├── CartService
+│   ├── UserService
+│   └── ...
+│
+├── repository/
+│   ├── ProductRepository
+│   ├── OrderRepository
+│   ├── CartRepository
+│   └── ...
+│
+├── model/
+│   ├── User
+│   ├── Product
+│   ├── Category
+│   ├── Cart
+│   ├── Order
+│   ├── Review
+│   ├── Rating
+│   └── Address
+│
+├── security/
+│   ├── JWT configuration
+│   └── Security configuration
+│
+└── exception/
 ```
 
-Spring security integration tests use an in-memory H2 database. Service unit tests use JUnit 5 and Mockito to mock repositories and collaborator services; they do not connect to MySQL or call Razorpay.
+---
+
+## 🔐 Authentication & Authorization
+
+The application uses **Spring Security and JWT** for authentication.
+
+### Authentication Flow
+
+```text
+User Login
+    ↓
+Spring Security
+    ↓
+Credentials Validation
+    ↓
+JWT Token Generated
+    ↓
+Client Stores Token
+    ↓
+Token Sent With Requests
+    ↓
+JWT Authentication Filter
+    ↓
+Protected API Access
+```
+
+Passwords are securely stored using **BCrypt password encoding**.
+
+The application also provides different access levels for users and administrators.
+
+---
+
+## 💳 Razorpay Payment Integration
+
+The backend integrates the **Razorpay Payment Gateway** for processing online payments.
+
+Basic payment flow:
+
+```text
+Create Order
+     ↓
+Generate Razorpay Payment
+     ↓
+User Completes Payment
+     ↓
+Payment Verification
+     ↓
+Update Order / Payment Status
+```
+
+> Payment credentials should be configured using environment variables and should never be committed to GitHub.
+
+---
+
+## 🗄️ Database
+
+The application uses **MySQL** with **JPA/Hibernate** for persistence.
+
+Main entities include:
+
+```text
+User
+ │
+ ├── Address
+ ├── Cart
+ ├── Orders
+ │
+Product
+ │
+ ├── Category
+ ├── Review
+ └── Rating
+
+Order
+ │
+ └── Order Items
+```
+
+---
+
+## ⚙️ Getting Started
+
+### Prerequisites
+
+Make sure you have installed:
+
+* Java 17+
+* Maven
+* MySQL
+* Git
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/MrSuraj602/e-commerce-backend.git
+cd e-commerce-backend
+```
+
+### 2. Create the database
+
+Create a MySQL database:
+
+```sql
+CREATE DATABASE ecommerce;
+```
+
+### 3. Configure application properties
+
+Create/update your application configuration with your local database credentials.
+
+Example:
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/ecommerce
+spring.datasource.username=YOUR_USERNAME
+spring.datasource.password=YOUR_PASSWORD
+
+spring.jpa.hibernate.ddl-auto=update
+```
+
+Configure your JWT and Razorpay credentials using environment variables rather than committing secrets to the repository.
+
+### 4. Run the application
+
+Using Maven:
+
+```bash
+./mvnw spring-boot:run
+```
+
+On Windows:
+
+```bash
+mvnw.cmd spring-boot:run
+```
+
+The backend will start on:
+
+```text
+http://localhost:8080
+```
+
+---
+
+## 🔑 API Overview
+
+The backend provides REST APIs for:
+
+| Module         | Functionality                                      |
+| -------------- | -------------------------------------------------- |
+| Authentication | Registration and login                             |
+| Users          | User profile and address management                |
+| Products       | Product listing, filtering, sorting and pagination |
+| Categories     | Product categorization                             |
+| Cart           | Add, update and remove cart items                  |
+| Orders         | Create and manage orders                           |
+| Reviews        | Product reviews                                    |
+| Ratings        | Product ratings                                    |
+| Payments       | Razorpay payment processing                        |
+| Admin          | Product and order management                       |
+
+You can test the APIs using **Postman**.
+
+---
+
+## 🔮 Future Improvements
+
+Planned improvements include:
+
+* Personalized product recommendation system
+* Redis caching
+* Automated testing
+* API documentation using Swagger/OpenAPI
+* Docker containerization
+* CI/CD pipeline
+* Production deployment
+
+---
+
+## 👨‍💻 Author
+
+**Suraj Rathod**
+
+* GitHub: https://github.com/MrSuraj602
+* LinkedIn: https://linkedin.com/in/surajrathod6/
+
+---
+
+## 📄 License
+
+This project is developed for learning and portfolio purposes.
